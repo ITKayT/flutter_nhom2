@@ -7,6 +7,8 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Center(
             child: Text(
@@ -15,6 +17,7 @@ class MyHomePage extends StatelessWidget {
             ),
           ),
           Icon(Icons.heart_broken, size: 100, color: Colors.red),
+          Text("Lập trình di động - Nhóm 2", style: TextStyle(color: Colors.blue, fontSize: 30)),
         ],
       ),
     );

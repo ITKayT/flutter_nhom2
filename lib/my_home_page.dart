@@ -5,6 +5,18 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      body: Column(
+        children: [
+          Center(
+            child: Text(
+              'Xin chào mọi người!',
+              style: TextStyle(color: Colors.red, fontSize: 30),
+            ),
+          ),
+          Icon(Icons.heart_broken, size: 100, color: Colors.red),
+        ],
+      ),
+    );
   }
 }

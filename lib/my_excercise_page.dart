@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class MyExercisePage extends StatelessWidget {
   const MyExercisePage({super.key});
@@ -20,7 +22,7 @@ class MyExercisePage extends StatelessWidget {
               const SizedBox(height: 16),
               block4(),
               const SizedBox(height: 8),
-              block5(),
+              block5(context), // <--- truyền context vào để đọc asset
               const SizedBox(height: 24),
             ],
           ),
@@ -29,7 +31,7 @@ class MyExercisePage extends StatelessWidget {
     );
   }
 
-  // Row: [ bell | settings ]
+  // ---------------- block1 ----------------
   Widget block1() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -37,39 +39,29 @@ class MyExercisePage extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.notifications_none),
           onPressed: () {},
-          tooltip: 'Notifications',
         ),
-        const SizedBox(width: 4),
         IconButton(
           icon: const Icon(Icons.settings_outlined),
           onPressed: () {},
-          tooltip: 'Settings',
         ),
       ],
     );
   }
 
-  // Welcome text
+  // ---------------- block2 ----------------
   Widget block2() {
-    return const Padding(
-      padding: EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Welcome,',
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            'Tuấn Kiệt',
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.w400),
-          ),
-        ],
-      ),
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Welcome,',
+            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+        Text('Tuấn Kiệt',
+            style: TextStyle(fontSize: 36, fontWeight: FontWeight.w400)),
+      ],
     );
   }
 
-  // Search bar
+  // ---------------- block3 ----------------
   Widget block3() {
     return Container(
       height: 44,
@@ -89,7 +81,7 @@ class MyExercisePage extends StatelessWidget {
     );
   }
 
-  // Saved Places title
+  // ---------------- block4 ----------------
   Widget block4() {
     return const Text(
       'Saved Places',
@@ -97,36 +89,68 @@ class MyExercisePage extends StatelessWidget {
     );
   }
 
-  // Grid 2x2 của ảnh
-  Widget block5() {
-    final imgs = [
-      'lib/assets/images/ngo-thanh-tung-B76nvP51iew-unsplash.jpg',
-      'lib/assets/images/thai-an-3Qzf-U0XfCE-unsplash.jpg',
-      'lib/assets/images/ph-ng-anh-nguy-n-Wg5QlgFdrDQ-unsplash.jpg',
-      'lib/assets/images/nguyen-minh-O2BwqiFnVHo-unsplash.jpg',
-    ];
+  // ---------------- block5 (auto load images) ----------------
+  Widget block5(BuildContext context) {
+    return FutureBuilder<List<String>>(
+      future: _loadAssetImages('assets/images/'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: imgs.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2x2
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 16 / 10,
-      ),
-      itemBuilder: (_, i) => ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black26),
-            borderRadius: BorderRadius.circular(12),
+        final imgs = snapshot.data ?? [];
+        if (imgs.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: Text('Không có ảnh nào')),
+          );
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: imgs.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 16 / 10,
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Image.asset(imgs[i], fit: BoxFit.cover),
-        ),
-      ),
+          itemBuilder: (_, i) => ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black26),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset(imgs[i], fit: BoxFit.cover),
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  // ---------------- helper đọc AssetManifest ----------------
+  Future<List<String>> _loadAssetImages(String folderPrefix) async {
+    try {
+      final manifestJson = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifestMap = json.decode(manifestJson);
+
+      final exts = RegExp(r'\.(png|jpe?g|webp|gif|bmp)$', caseSensitive: false);
+      final paths = manifestMap.keys
+          .where((path) => path.startsWith(folderPrefix) && exts.hasMatch(path))
+          .toList()
+        ..sort();
+
+      return paths;
+    } catch (e) {
+      debugPrint('Lỗi khi đọc AssetManifest: $e');
+      return <String>[];
+    }
   }
 }

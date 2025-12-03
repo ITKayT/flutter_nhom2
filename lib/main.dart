@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_nhom2/My_report.dart';
 import 'package:flutter_nhom2/my_BMI.dart';
+import 'package:flutter_nhom2/my_product.dart';
+import 'package:flutter_nhom2/newspage.dart';
 // import 'package:flutter_nhom2/ColorChangerApp.dart';
 // import 'package:flutter_nhom2/CountdownTimerApp.dart';
 // import 'package:flutter_nhom2/FormLogin.dart';
@@ -21,7 +23,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MyReport(),
+      home: MyNewsPage(),
     );  
   }
 }
+  
